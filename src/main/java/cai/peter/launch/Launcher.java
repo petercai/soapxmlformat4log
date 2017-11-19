@@ -19,16 +19,21 @@ public class Launcher
 	public static void main(String[] args)
 	{
 		Options options = new Options();
-		Option option = new Option("f",true, "File name or Folder to format");
+		Option option = new Option("f",true, "File name to format");
 		option.setRequired(true);
+		options.addOption(option);
+		option = new Option("b",false, "Format xml to a backup file");
+		option.setRequired(false);
 		options.addOption(option);
 		CommandLineParser parser = new BasicParser();
 		try
 		{
 			CommandLine cl = parser.parse(options, args);
 			String filename = cl.getOptionValue("f");
+			boolean isBackup = cl.hasOption("b");
+			
 
-			new TransformLogFile().transform(filename);
+			new TransformLogFile().transform(filename, isBackup);
 
 		}
 		catch (ParseException e)
@@ -44,6 +49,6 @@ public class Launcher
 	static void help(Options options)
 	{
 		HelpFormatter formatter = new HelpFormatter();
-		formatter.printHelp("java -jar logf.jar -f <arg>", options);
+		formatter.printHelp("java -jar logf.jar -f <arg> [-b]", options);
 	}
 }

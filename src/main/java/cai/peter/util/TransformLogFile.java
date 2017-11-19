@@ -20,10 +20,32 @@ import org.xml.sax.SAXException;
 
 public class TransformLogFile
 {
-	public void transform(final String source) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, ClassCastException, SAXException, ParserConfigurationException
+	public void transform(final String filename, boolean isBackup) throws IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, ClassCastException, SAXException, ParserConfigurationException
 	{
-		String dest = source+".xmlpretty";
-		formatLog(source, dest);
+		if( isBackup )
+		{
+			String dest = filename+".xmlpretty";
+			formatLog(new File(filename), new File(dest));
+			
+		}
+		else
+		{
+			File dest = new File(filename);
+			
+			for(int i=1;i<Integer.MAX_VALUE;i++)
+			{
+				File source = new File(String.format("%s.bak%d", filename,i));
+				if( !source.exists())
+				{
+					dest.renameTo(source);
+					formatLog(source, dest);
+					break;
+				}
+			}
+			
+		}
+		
+			
 //		String tmp = source + ".___";
 //		File tmpFile = new File(tmp);
 //		if( tmpFile.exists())
@@ -52,27 +74,21 @@ public class TransformLogFile
 		
 	}
 
-	protected void formatLog(String source,String dest) throws FileNotFoundException,
+	protected void formatLog(File source,File dest) throws FileNotFoundException,
 			IOException, ClassNotFoundException, InstantiationException, IllegalAccessException, ClassCastException, SAXException, ParserConfigurationException
 	{
 
-		File fin = new File(source);
-		FileInputStream fis = new FileInputStream(fin);
-		BufferedReader in = new BufferedReader(new InputStreamReader(fis));
+		BufferedReader fileBufReader = new BufferedReader(new InputStreamReader(new FileInputStream(source)));
+		BufferedWriter fileBufWriter = new BufferedWriter(new FileWriter(dest,false));
 
-		FileWriter fstream = new FileWriter(dest,false);
-		BufferedWriter out = new BufferedWriter(fstream);
-
-		String sin = null;
-		while ((sin = in.readLine()) != null)
+		String aLine = null;
+		while ((aLine = fileBufReader.readLine()) != null)
 		{
-			out.write(formatSOAPEnvelope(sin));
-			out.newLine();
+			fileBufWriter.write(formatSOAPEnvelope(aLine));
+			fileBufWriter.newLine();
 		}
-		// do not forget to close the buffer reader
-		in.close();
-		// close buffer writer
-		out.close();
+		fileBufReader.close();
+		fileBufWriter.close();
 	}
 
 
